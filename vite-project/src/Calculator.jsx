@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import './Calculator.css'
 import Key from './Key'
 
@@ -7,66 +7,74 @@ import Key from './Key'
 const Calculator = () => {
   const [screen, setScreen] = useState('')
   const keys = ['1', '2', '3', '+', '4', '5', '6', '-', '7', '8', '9', 'x', '0', '.', '%', '=']
-  const operacion = []
-  const [resultado, setResultado] = useState('')
+  const operacion = useRef([])
 
   const verifyResultado = (result) => {
-    if (result.length > 9) {
+    if (result.toString().length > 9) {
       setScreen('ERROR')
+      return 'ERROR'
+    }
+    if (parseFloat(result) < 0) {
+      setScreen('ERROR')
+      return 'ERROR'
     }
     setScreen(result)
+    return result
   }
 
-  const calculate = (operation) => {
-    console.log(operation)
-    if (operacion[1] === '+') {
-      const suma = (Number(operation[0]) + Number(operation[2]))
-      verifyResultado(suma)
-    } else if (operation[1] === '-') {
-      const resta = (Number(operation[0]) - Number(operation[2]))
-      verifyResultado(resta)
-    } else if (operation[1] === '*') {
-      const multi = (Number(operation[0]) * Number(operation[2]))
-      verifyResultado(multi)
-    } else if (operation[1] === '%') {
-      const modulo = (Number(operation[0]) % Number(operation[2]))
-      verifyResultado(modulo)
+  const calculate = (operandores) => {
+    if (operandores[1] === '+') {
+      const suma = (parseFloat(operandores[0]) + parseFloat(operandores[2]))
+      operacion.current = []
+      const es = verifyResultado(suma)
+      setScreen(es)
+      operacion.current.push(suma)
+    } else if (operandores[1] === '-') {
+      const resta = (parseFloat(operandores[0]) - parseFloat(operandores[2]))
+      operacion.current = []
+      const es = verifyResultado(resta)
+      setScreen(es)
+      operacion.current.push(resta)
+    } else if (operandores[1] === '*') {
+      const multiplicacion = (parseFloat(operandores[0]) * parseFloat(operandores[2]))
+      operacion.current = []
+      const es = verifyResultado(multiplicacion)
+      setScreen(es)
+      operacion.current.push(multiplicacion)
+    } else if (operandores[1] === '%') {
+      const modulo = (parseFloat(operandores[0]) % parseFloat(operandores[2]))
+      operacion.current = []
+      const es = verifyResultado(modulo)
+      setScreen(es)
+      operacion.current.push(modulo)
     }
   }
+
   const clickHandler = (value) => {
-    console.log(operacion)
-    if ('+-*%='.includes(value)) {
+    if ('+-x%='.includes(value)) {
       if (value === '+') {
-        operacion.push(screen)
-        console.log(operacion)
+        operacion.current.push(screen)
         setScreen('')
-        operacion.push('+')
-        console.log(operacion)
+        operacion.current.push('+')
       } else if (value === '-') {
-        operacion.push(screen)
-        console.log(operacion)
+        operacion.current.push(screen)
         setScreen('')
-        operacion.push('-')
-        console.log(operacion)
-      } else if (value === '*') {
-        operacion.push(screen)
-        console.log(operacion)
+        operacion.current.push('-')
+      } else if (value === 'x') {
+        operacion.current.push(screen)
         setScreen('')
-        operacion.push('*')
-        console.log(operacion)
+        operacion.current.push('*')
       } else if (value === '%') {
-        operacion.push(screen)
-        console.log(operacion)
+        operacion.current.push(screen)
         setScreen('')
-        operacion.push('%')
-        console.log(operacion)
+        operacion.current.push('%')
       } else if (value === '=') {
-        operacion.push(screen)
-        calculate(operacion)
-        console.log(resultado)
+        operacion.current.push(screen)
+        calculate(operacion.current)
+        operacion.current = []
       }
     }
-    if (`${screen}`.length < 9 && !('+-*%='.includes(value))) {
+    if (`${screen}`.length < 9 && !('+-x%='.includes(value))) {
       setScreen(screen + value)
     }
   }
@@ -75,7 +83,7 @@ const Calculator = () => {
       <div className="screen">
         {screen}
       </div>
-      <button type="button" onClick={() => { setScreen('') }} className="clear">CE</button>
+      <button type="button" onClick={() => { setScreen(''); operacion.current = [] }} className="clear">CE</button>
       <div className="button-holder">
         <div className="buttons">
           {
