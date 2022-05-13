@@ -6,15 +6,12 @@ import Key from './Key'
 
 const Calculator = () => {
   const [screen, setScreen] = useState('')
-  const keys = ['1', '2', '3', '+', '4', '5', '6', '-', '7', '8', '9', 'x', '0', '.', '%', '=']
+  const keys = ['+/-', '%', 'C', 'AC', '7', '8', '9', '+', '4', '5', '6', '-', '1', '2', '3', 'x', '0', '.', '/', '=']
   const operacion = useRef([])
+  const pressop = useRef(false)
 
   const verifyResultado = (result) => {
     if (result.toString().length > 9) {
-      setScreen('ERROR')
-      return 'ERROR'
-    }
-    if (parseFloat(result) < 0) {
       setScreen('ERROR')
       return 'ERROR'
     }
@@ -27,69 +24,112 @@ const Calculator = () => {
       const suma = (parseFloat(operandores[0]) + parseFloat(operandores[2]))
       operacion.current = []
       const es = verifyResultado(suma)
+      operacion.current.push(es.toString())
       setScreen(es)
-      operacion.current.push(suma)
     } else if (operandores[1] === '-') {
       const resta = (parseFloat(operandores[0]) - parseFloat(operandores[2]))
       operacion.current = []
       const es = verifyResultado(resta)
+      operacion.current.push(es.toString())
       setScreen(es)
-      operacion.current.push(resta)
+    } else if (operandores[1] === '/') {
+      const division = (parseFloat(operandores[0]) / parseFloat(operandores[2]))
+      operacion.current = []
+      const es = verifyResultado(division)
+      operacion.current.push(es.toString())
+      setScreen(es)
     } else if (operandores[1] === '*') {
       const multiplicacion = (parseFloat(operandores[0]) * parseFloat(operandores[2]))
       operacion.current = []
       const es = verifyResultado(multiplicacion)
+      operacion.current.push(es.toString())
       setScreen(es)
-      operacion.current.push(multiplicacion)
     } else if (operandores[1] === '%') {
-      const modulo = (parseFloat(operandores[0]) % parseFloat(operandores[2]))
+      const suma = (parseFloat(operandores[0]) % parseFloat(operandores[2]))
       operacion.current = []
-      const es = verifyResultado(modulo)
+      const es = verifyResultado(suma)
+      operacion.current.push(es.toString())
       setScreen(es)
-      operacion.current.push(modulo)
     }
   }
 
   const clickHandler = (value) => {
-    if ('+-x%='.includes(value)) {
-      if (value === '+') {
+    if (screen !== 'ERROR') {
+      if ('/+-%x'.includes(value) && `${screen}`.length !== 0 && pressop.current === false) {
         operacion.current.push(screen)
-        setScreen('')
-        operacion.current.push('+')
-      } else if (value === '-') {
-        operacion.current.push(screen)
-        setScreen('')
-        operacion.current.push('-')
-      } else if (value === 'x') {
-        operacion.current.push(screen)
-        setScreen('')
-        operacion.current.push('*')
-      } else if (value === '%') {
-        operacion.current.push(screen)
-        setScreen('')
-        operacion.current.push('%')
-      } else if (value === '=') {
+        if (operacion.current.length === 3) {
+          calculate(operacion.current)
+        }
+        if (value === '+') {
+          operacion.current.push('+')
+          pressop.current = true
+        } else if (value === '-') {
+          operacion.current.push('-')
+          pressop.current = true
+        } else if (value === '/') {
+          operacion.current.push('/')
+          pressop.current = true
+        } else if (value === '%') {
+          operacion.current.push('%')
+          pressop.current = true
+        } else if (value === 'x') {
+          operacion.current.push('*')
+          pressop.current = true
+        }
+        if (value === 'C') {
+          setScreen('')
+        }
+      }
+      if (value === '=') {
         operacion.current.push(screen)
         calculate(operacion.current)
         operacion.current = []
       }
+      if (value === '+/-') {
+        const numerin = parseFloat(screen)
+        const newscreen = (-1) * (numerin)
+        const negativin = verifyResultado(newscreen)
+        setScreen(negativin.toString())
+      }
+      if (value === '.') {
+        if (!screen.includes(value)) {
+          setScreen(screen + value)
+        }
+      }
+      if (`${screen}`.length < 9 && !('AC+/-%x=.'.includes(value))) {
+        if (pressop.current === true) {
+          setScreen(value)
+          pressop.current = false
+        } else {
+          setScreen(screen + value)
+        }
+      }
     }
-    if (`${screen}`.length < 9 && !('+-x%='.includes(value))) {
-      setScreen(screen + value)
+    if (value === 'AC') {
+      operacion.current = []
+      setScreen('')
     }
+    console.log(operacion.current)
   }
+
   return (
     <div className="calcbody">
       <div className="screen">
         {screen}
       </div>
-      <button type="button" onClick={() => { setScreen(''); operacion.current = [] }} className="clear">CE</button>
       <div className="button-holder">
         <div className="buttons">
           {
-            keys.map((element, index) => (
-              <Key key={index.id} value={element} clicker={clickHandler} />
-            ))
+            keys.map((element) => {
+              if (element === 'AC') {
+                return (
+                  <Key key={element} value={element} clicker={clickHandler} clase="clear" />
+                )
+              }
+              return (
+                <Key key={element} value={element} clicker={clickHandler} clase="button-box" />
+              )
+            })
           }
         </div>
       </div>
