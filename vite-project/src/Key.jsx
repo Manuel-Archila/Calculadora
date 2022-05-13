@@ -13,5 +13,5 @@ Key.propTypes = {
   value: PropTypes.string.isRequired,
   clase: PropTypes.string.isRequired,
 }
-
+// comentario x
 export default Key
